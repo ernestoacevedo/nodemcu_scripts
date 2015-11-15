@@ -21,24 +21,19 @@ end
 
 tmr.alarm(1, 1000, 1, function()
     if wifi.sta.getip() == nil then
-        print("[IP unavaiable, waiting.]")
+        print("[IP unavailable, waiting.]") 
     else
         tmr.stop(1)
         print("[Connected, IP is "..wifi.sta.getip().."]");
     end
 end)
 
-
-responseHeader = function(code, type)
-    return "HTTP/1.1 " .. code .. "\r\nConnection: close\r\nServer: nunu-Luaweb\r\nContent-Type: " .. type .. "\r\n\r\n"
-end
-
-srv=net.createServer(net.TCP)
-srv:listen(80,function(conn)
-  conn:on("receive",function(conn,request)
-    print(request)
-    conn:send(responseHeader("200 OK","application/json"))
-    conn:send(cjson.encode({status=true}))
-  end)
-  conn:on("sent",function(conn) conn:close() end)
+tmr.alarm(2, 1000, 0, function()
+    sk=net.createConnection(net.TCP, 0)
+    sk:on("receive", function(sck, c) print(c) end )
+    sk:connect(3000,"192.168.0.5")
+    sk:on("connection", function(sck,c)
+        -- Wait for connection before sending.
+        sk:send("GET / HTTP/1.1\r\nHost: 192.168.0.5\r\nConnection: keep-alive\r\nAccept: */*\r\n\r\n")
+        end)
 end)
